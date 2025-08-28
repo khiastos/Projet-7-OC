@@ -1,58 +1,103 @@
+﻿using Findexium.Data;
+using Findexium.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Controllers
+namespace Findexium.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class RuleNameController : ControllerBase
     {
-        // TODO: Inject RuleName service
+        private readonly LocalDbContext _context;
 
-        [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public RuleNameController(LocalDbContext context)
         {
-            // TODO: find all RuleName, add to model
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/RuleName
         [HttpGet]
-        [Route("add")]
-        public IActionResult AddRuleName([FromBody]RuleName trade)
+        public async Task<ActionResult<IEnumerable<RuleNameDTO>>> GetRuleNameDTO()
         {
-            return Ok();
+            return await _context.RuleNameDTO.ToListAsync();
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]RuleName trade)
+        // GET: api/RuleName/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<RuleNameDTO>> GetRuleNameDTO(int id)
         {
-            // TODO: check data valid and save to db, after saving return RuleName list
-            return Ok();
+            var ruleNameDTO = await _context.RuleNameDTO.FindAsync(id);
+
+            if (ruleNameDTO == null)
+            {
+                return NotFound();
+            }
+
+            return ruleNameDTO;
         }
 
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        // PUT: api/RuleName/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutRuleNameDTO(int id, RuleNameDTO ruleNameDTO)
         {
-            // TODO: get RuleName by Id and to model then show to the form
-            return Ok();
+            if (id != ruleNameDTO.RuleNameId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(ruleNameDTO).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RuleNameDTOExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
+        // POST: api/RuleName
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateRuleName(int id, [FromBody] RuleName rating)
+        public async Task<ActionResult<RuleNameDTO>> PostRuleNameDTO(RuleNameDTO ruleNameDTO)
         {
-            // TODO: check required fields, if valid call service to update RuleName and return RuleName list
-            return Ok();
+            _context.RuleNameDTO.Add(ruleNameDTO);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetRuleNameDTO", new { id = ruleNameDTO.RuleNameId }, ruleNameDTO);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteRuleName(int id)
+        // DELETE: api/RuleName/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRuleNameDTO(int id)
         {
-            // TODO: Find RuleName by Id and delete the RuleName, return to Rule list
-            return Ok();
+            var ruleNameDTO = await _context.RuleNameDTO.FindAsync(id);
+            if (ruleNameDTO == null)
+            {
+                return NotFound();
+            }
+
+            _context.RuleNameDTO.Remove(ruleNameDTO);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool RuleNameDTOExists(int id)
+        {
+            return _context.RuleNameDTO.Any(e => e.RuleNameId == id);
         }
     }
 }

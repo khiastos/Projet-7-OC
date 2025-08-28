@@ -1,59 +1,103 @@
-using Dot.Net.WebApi.Controllers.Domain;
+﻿using Findexium.Data;
+using Findexium.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Controllers
+namespace Findexium.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class RatingController : ControllerBase
     {
-        // TODO: Inject Rating service
+        private readonly LocalDbContext _context;
 
-        [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public RatingController(LocalDbContext context)
         {
-            // TODO: find all Rating, add to model
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/Rating
         [HttpGet]
-        [Route("add")]
-        public IActionResult AddRatingForm([FromBody]Rating rating)
+        public async Task<ActionResult<IEnumerable<RatingDTO>>> GetRatingDTO()
         {
-            return Ok();
+            return await _context.RatingDTO.ToListAsync();
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]Rating rating)
+        // GET: api/Rating/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<RatingDTO>> GetRatingDTO(int id)
         {
-            // TODO: check data valid and save to db, after saving return Rating list
-            return Ok();
+            var ratingDTO = await _context.RatingDTO.FindAsync(id);
+
+            if (ratingDTO == null)
+            {
+                return NotFound();
+            }
+
+            return ratingDTO;
         }
 
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        // PUT: api/Rating/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutRatingDTO(int id, RatingDTO ratingDTO)
         {
-            // TODO: get Rating by Id and to model then show to the form
-            return Ok();
+            if (id != ratingDTO.RatingId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(ratingDTO).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RatingDTOExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
+        // POST: api/Rating
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateRating(int id, [FromBody] Rating rating)
+        public async Task<ActionResult<RatingDTO>> PostRatingDTO(RatingDTO ratingDTO)
         {
-            // TODO: check required fields, if valid call service to update Rating and return Rating list
-            return Ok();
+            _context.RatingDTO.Add(ratingDTO);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetRatingDTO", new { id = ratingDTO.RatingId }, ratingDTO);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteRating(int id)
+        // DELETE: api/Rating/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRatingDTO(int id)
         {
-            // TODO: Find Rating by Id and delete the Rating, return to Rating list
-            return Ok();
+            var ratingDTO = await _context.RatingDTO.FindAsync(id);
+            if (ratingDTO == null)
+            {
+                return NotFound();
+            }
+
+            _context.RatingDTO.Remove(ratingDTO);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool RatingDTOExists(int id)
+        {
+            return _context.RatingDTO.Any(e => e.RatingId == id);
         }
     }
 }

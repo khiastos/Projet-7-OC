@@ -1,59 +1,101 @@
-using Dot.Net.WebApi.Domain;
+﻿using Findexium.Data;
+using Findexium.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Controllers
+namespace Findexium.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class TradeController : ControllerBase
     {
-        // TODO: Inject Trade service
+        private readonly LocalDbContext _context;
 
-        [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public TradeController(LocalDbContext context)
         {
-            // TODO: find all Trade, add to model
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/Trade
         [HttpGet]
-        [Route("add")]
-        public IActionResult AddTrade([FromBody]Trade trade)
+        public async Task<ActionResult<IEnumerable<TradeDTO>>> GetTradeDTO()
         {
-            return Ok();
+            return await _context.TradeDTO.ToListAsync();
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]Trade trade)
+        // GET: api/Trade/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TradeDTO>> GetTradeDTO(int id)
         {
-            // TODO: check data valid and save to db, after saving return Trade list
-            return Ok();
+            var tradeDTO = await _context.TradeDTO.FindAsync(id);
+
+            if (tradeDTO == null)
+            {
+                return NotFound();
+            }
+
+            return tradeDTO;
         }
 
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        // PUT: api/Trade/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutTradeDTO(int id, TradeDTO tradeDTO)
         {
-            // TODO: get Trade by Id and to model then show to the form
-            return Ok();
+            if (id != tradeDTO.TradeId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(tradeDTO).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!TradeDTOExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
+        // POST: api/Trade
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateTrade(int id, [FromBody] Trade trade)
+        public async Task<ActionResult<TradeDTO>> PostTradeDTO(TradeDTO tradeDTO)
         {
-            // TODO: check required fields, if valid call service to update Trade and return Trade list
-            return Ok();
+            _context.TradeDTO.Add(tradeDTO);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetTradeDTO", new { id = tradeDTO.TradeId }, tradeDTO);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteTrade(int id)
+        // DELETE: api/Trade/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTradeDTO(int id)
         {
-            // TODO: Find Trade by Id and delete the Trade, return to Trade list
-            return Ok();
+            var tradeDTO = await _context.TradeDTO.FindAsync(id);
+            if (tradeDTO == null)
+            {
+                return NotFound();
+            }
+
+            _context.TradeDTO.Remove(tradeDTO);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool TradeDTOExists(int id)
+        {
+            return _context.TradeDTO.Any(e => e.TradeId == id);
         }
     }
 }

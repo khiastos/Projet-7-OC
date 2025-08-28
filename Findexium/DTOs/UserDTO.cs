@@ -1,7 +1,10 @@
-namespace Findexium.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Findexium.DTOs
 {
-    public class User
+    public class UserDTO
     {
+        [Key]
         public int UserId { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }

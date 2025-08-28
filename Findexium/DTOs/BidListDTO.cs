@@ -1,7 +1,10 @@
-namespace Findexium.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Findexium.DTOs
 {
-    public class BidList
+    public class BidListDTO
     {
+        [Key]
         public int BidListId { get; set; }
         public string? Account { get; set; }
         public string? BidType { get; set; }

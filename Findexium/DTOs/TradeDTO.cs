@@ -1,7 +1,10 @@
-namespace Findexium.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Findexium.DTOs
 {
-    public class Trade
+    public class TradeDTO
     {
+        [Key]
         public int TradeId { get; set; }
         public string? Account { get; set; }
         public string? AccountType { get; set; }

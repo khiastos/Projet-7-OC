@@ -1,85 +1,103 @@
-using Dot.Net.WebApi.Domain;
-using Dot.Net.WebApi.Repositories;
+﻿using Findexium.Data;
+using Findexium.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Controllers
+namespace Findexium.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private UserRepository _userRepository;
+        private readonly LocalDbContext _context;
 
-        public UserController(UserRepository userRepository)
+        public UserController(LocalDbContext context)
         {
-            _userRepository = userRepository;
+            _context = context;
         }
 
+        // GET: api/User
         [HttpGet]
-        [Route("list")]
-        public IActionResult Home()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUserDTO()
         {
-            return Ok();
+            return await _context.UserDTO.ToListAsync();
         }
 
-        [HttpGet]
-        [Route("add")]
-        public IActionResult AddUser([FromBody]User user)
+        // GET: api/User/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDTO>> GetUserDTO(int id)
         {
-            return Ok();
+            var userDTO = await _context.UserDTO.FindAsync(id);
+
+            if (userDTO == null)
+            {
+                return NotFound();
+            }
+
+            return userDTO;
         }
 
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody]User user)
+        // PUT: api/User/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUserDTO(int id, UserDTO userDTO)
         {
-            if (!ModelState.IsValid)
+            if (id != userDTO.UserId)
             {
                 return BadRequest();
             }
-           
-           _userRepository.Add(user);
 
-            return Ok();
+            _context.Entry(userDTO).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserDTOExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
-        {
-            User user = _userRepository.FindById(id);
-            
-            if (user == null)
-                throw new ArgumentException("Invalid user Id:" + id);
-
-            return Ok();
-        }
-
+        // POST: api/User
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] User user)
+        public async Task<ActionResult<UserDTO>> PostUserDTO(UserDTO userDTO)
         {
-            // TODO: check required fields, if valid call service to update Trade and return Trade list
-            return Ok();
+            _context.UserDTO.Add(userDTO);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetUserDTO", new { id = userDTO.UserId }, userDTO);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteUser(int id)
+        // DELETE: api/User/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserDTO(int id)
         {
-            User user = _userRepository.FindById(id);
-            
-            if (user == null)
-                throw new ArgumentException("Invalid user Id:" + id);
+            var userDTO = await _context.UserDTO.FindAsync(id);
+            if (userDTO == null)
+            {
+                return NotFound();
+            }
 
-            return Ok();
+            _context.UserDTO.Remove(userDTO);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
-        [HttpGet]
-        [Route("/secure/article-details")]
-        public async Task<ActionResult<List<User>>> GetAllUserArticles()
+        private bool UserDTOExists(int id)
         {
-            return Ok();
+            return _context.UserDTO.Any(e => e.UserId == id);
         }
     }
 }

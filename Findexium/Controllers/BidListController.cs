@@ -1,40 +1,103 @@
-using Dot.Net.WebApi.Domain;
+﻿using Findexium.Data;
+using Findexium.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dot.Net.WebApi.Controllers
+namespace Findexium.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class BidListController : ControllerBase
     {
-        [HttpGet]
-        [Route("validate")]
-        public IActionResult Validate([FromBody] BidList bidList)
+        private readonly LocalDbContext _context;
+
+        public BidListController(LocalDbContext context)
         {
-            // TODO: check data valid and save to db, after saving return bid list
-            return Ok();
+            _context = context;
         }
 
+        // GET: api/BidList
         [HttpGet]
-        [Route("update/{id}")]
-        public IActionResult ShowUpdateForm(int id)
+        public async Task<ActionResult<IEnumerable<BidListDTO>>> GetAll()
         {
-            return Ok();
+            return await _context.BidListDTO.ToListAsync();
         }
 
+        // GET: api/BidList/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BidListDTO>> GetById(int id)
+        {
+            var bidListDTO = await _context.BidListDTO.FindAsync(id);
+
+            if (bidListDTO == null)
+            {
+                return NotFound();
+            }
+
+            return bidListDTO;
+        }
+
+        // PUT: api/BidList/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutBidListDTO(int id, BidListDTO bidListDTO)
+        {
+            if (id != bidListDTO.BidListId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(bidListDTO).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BidListDTOExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/BidList
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Route("update/{id}")]
-        public IActionResult UpdateBid(int id, [FromBody] BidList bidList)
+        public async Task<ActionResult<BidListDTO>> PostBidListDTO(BidListDTO bidListDTO)
         {
-            // TODO: check required fields, if valid call service to update Bid and return list Bid
-            return Ok();
+            _context.BidListDTO.Add(bidListDTO);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetBidListDTO", new { id = bidListDTO.BidListId }, bidListDTO);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public IActionResult DeleteBid(int id)
+        // DELETE: api/BidList/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBidListDTO(int id)
         {
-            return Ok();
+            var bidListDTO = await _context.BidListDTO.FindAsync(id);
+            if (bidListDTO == null)
+            {
+                return NotFound();
+            }
+
+            _context.BidListDTO.Remove(bidListDTO);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool BidListDTOExists(int id)
+        {
+            return _context.BidListDTO.Any(e => e.BidListId == id);
         }
     }
 }

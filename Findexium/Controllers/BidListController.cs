@@ -10,24 +10,19 @@ namespace Findexium.Controllers
     public class BidListController : ControllerBase
     {
         private readonly LocalDbContext _context;
+        private readonly GenericRepository<BidListDTO> _repo;
 
-        public BidListController(LocalDbContext context)
+        public BidListController(LocalDbContext context, GenericRepository<BidListDTO> repo)
         {
             _context = context;
-        }
-
-        // GET: api/BidList
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<BidListDTO>>> GetAll()
-        {
-            return await _context.BidListDTO.ToListAsync();
+            _repo = repo;
         }
 
         // GET: api/BidList/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<BidListDTO>> GetById(int id)
+        public async Task<ActionResult<BidListDTO>> Details(int id)
         {
-            var bidListDTO = await _context.BidListDTO.FindAsync(id);
+            var bidListDTO = await _repo.GetByIdAsync(id);
 
             if (bidListDTO == null)
             {
@@ -38,7 +33,6 @@ namespace Findexium.Controllers
         }
 
         // PUT: api/BidList/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBidListDTO(int id, BidListDTO bidListDTO)
         {
@@ -81,10 +75,10 @@ namespace Findexium.Controllers
 
         // DELETE: api/BidList/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBidListDTO(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var bidListDTO = await _context.BidListDTO.FindAsync(id);
-            if (bidListDTO == null)
+            if (bidListDTO is null)
             {
                 return NotFound();
             }

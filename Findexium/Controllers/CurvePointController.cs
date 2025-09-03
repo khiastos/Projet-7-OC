@@ -1,103 +1,75 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class CurvePointController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly IGenericRepository<CurvePoint> _repo;
 
-        public CurvePointController(LocalDbContext context)
+        public CurvePointController(IGenericRepository<CurvePoint> repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
-        // GET: api/CurvePoint
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CurvePointDTO>>> GetCurvePointDTO()
+        // GET api/curvepoint/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return await _context.CurvePointDTO.ToListAsync();
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // GET: api/CurvePoint/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CurvePointDTO>> GetCurvePointDTO(int id)
-        {
-            var curvePointDTO = await _context.CurvePointDTO.FindAsync(id);
-
-            if (curvePointDTO == null)
-            {
-                return NotFound();
-            }
-
-            return curvePointDTO;
-        }
-
-        // PUT: api/CurvePoint/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCurvePointDTO(int id, CurvePointDTO curvePointDTO)
-        {
-            if (id != curvePointDTO.CurvePointId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(curvePointDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CurvePointDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/CurvePoint
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST api/curvepoint
         [HttpPost]
-        public async Task<ActionResult<CurvePointDTO>> PostCurvePointDTO(CurvePointDTO curvePointDTO)
+        public async Task<IActionResult> Create([FromBody] CurvePointDTO dto)
         {
-            _context.CurvePointDTO.Add(curvePointDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetCurvePointDTO", new { id = curvePointDTO.CurvePointId }, curvePointDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.CurvePointId }, entity.ToDto());
         }
 
-        // DELETE: api/CurvePoint/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCurvePointDTO(int id)
+        // PUT api/curvepoint/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] CurvePointDTO dto)
         {
-            var curvePointDTO = await _context.CurvePointDTO.FindAsync(id);
-            if (curvePointDTO == null)
+            if (id != dto.CurvePointId) return BadRequest("Id mismatch.");
+
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.CurvePointDTO.Remove(curvePointDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
         }
 
-        private bool CurvePointDTOExists(int id)
+        // DELETE api/curvepoint/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _context.CurvePointDTO.Any(e => e.CurvePointId == id);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
     }
 }

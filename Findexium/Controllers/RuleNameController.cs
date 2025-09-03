@@ -1,103 +1,75 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class RuleNameController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly IGenericRepository<RuleName> _repo;
 
-        public RuleNameController(LocalDbContext context)
+        public RuleNameController(IGenericRepository<RuleName> repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
-        // GET: api/RuleName
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<RuleNameDTO>>> GetRuleNameDTO()
+        // GET api/rulename/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return await _context.RuleNameDTO.ToListAsync();
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // GET: api/RuleName/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<RuleNameDTO>> GetRuleNameDTO(int id)
-        {
-            var ruleNameDTO = await _context.RuleNameDTO.FindAsync(id);
-
-            if (ruleNameDTO == null)
-            {
-                return NotFound();
-            }
-
-            return ruleNameDTO;
-        }
-
-        // PUT: api/RuleName/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRuleNameDTO(int id, RuleNameDTO ruleNameDTO)
-        {
-            if (id != ruleNameDTO.RuleNameId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(ruleNameDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RuleNameDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/RuleName
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST api/rulename
         [HttpPost]
-        public async Task<ActionResult<RuleNameDTO>> PostRuleNameDTO(RuleNameDTO ruleNameDTO)
+        public async Task<IActionResult> Create([FromBody] RuleNameDTO dto)
         {
-            _context.RuleNameDTO.Add(ruleNameDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetRuleNameDTO", new { id = ruleNameDTO.RuleNameId }, ruleNameDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.RuleNameId }, entity.ToDto());
         }
 
-        // DELETE: api/RuleName/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRuleNameDTO(int id)
+        // PUT api/rulename/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] RuleNameDTO dto)
         {
-            var ruleNameDTO = await _context.RuleNameDTO.FindAsync(id);
-            if (ruleNameDTO == null)
+            if (id != dto.RuleNameId) return BadRequest("Id mismatch.");
+
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.RuleNameDTO.Remove(ruleNameDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
         }
 
-        private bool RuleNameDTOExists(int id)
+        // DELETE api/rulename/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _context.RuleNameDTO.Any(e => e.RuleNameId == id);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
     }
 }

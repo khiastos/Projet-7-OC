@@ -1,103 +1,75 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly IGenericRepository<User> _repo;
 
-        public UserController(LocalDbContext context)
+        public UserController(IGenericRepository<User> repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
-        // GET: api/User
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUserDTO()
+        // GET api/user/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return await _context.UserDTO.ToListAsync();
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // GET: api/User/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserDTO>> GetUserDTO(int id)
-        {
-            var userDTO = await _context.UserDTO.FindAsync(id);
-
-            if (userDTO == null)
-            {
-                return NotFound();
-            }
-
-            return userDTO;
-        }
-
-        // PUT: api/User/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUserDTO(int id, UserDTO userDTO)
-        {
-            if (id != userDTO.UserId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(userDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/User
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST api/user
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> PostUserDTO(UserDTO userDTO)
+        public async Task<IActionResult> Create([FromBody] UserDTO dto)
         {
-            _context.UserDTO.Add(userDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetUserDTO", new { id = userDTO.UserId }, userDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.UserId }, entity.ToDto());
         }
 
-        // DELETE: api/User/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserDTO(int id)
+        // PUT api/user/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UserDTO dto)
         {
-            var userDTO = await _context.UserDTO.FindAsync(id);
-            if (userDTO == null)
+            if (id != dto.UserId) return BadRequest("Id mismatch.");
+
+            var existing = await _repo.GetByIdAsync(id);
+            if (existing is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.UserDTO.Remove(userDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
         }
 
-        private bool UserDTOExists(int id)
+        // DELETE api/user/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _context.UserDTO.Any(e => e.UserId == id);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
     }
 }

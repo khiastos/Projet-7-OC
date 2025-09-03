@@ -1,101 +1,75 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class TradeController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly IGenericRepository<Trade> _repo;
 
-        public TradeController(LocalDbContext context)
+        public TradeController(IGenericRepository<Trade> repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
-        // GET: api/Trade
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TradeDTO>>> GetTradeDTO()
+        // GET api/trade/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return await _context.TradeDTO.ToListAsync();
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // GET: api/Trade/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TradeDTO>> GetTradeDTO(int id)
-        {
-            var tradeDTO = await _context.TradeDTO.FindAsync(id);
-
-            if (tradeDTO == null)
-            {
-                return NotFound();
-            }
-
-            return tradeDTO;
-        }
-
-        // PUT: api/Trade/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTradeDTO(int id, TradeDTO tradeDTO)
-        {
-            if (id != tradeDTO.TradeId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(tradeDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TradeDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Trade
+        // POST api/trade
         [HttpPost]
-        public async Task<ActionResult<TradeDTO>> PostTradeDTO(TradeDTO tradeDTO)
+        public async Task<IActionResult> Create([FromBody] TradeDTO dto)
         {
-            _context.TradeDTO.Add(tradeDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetTradeDTO", new { id = tradeDTO.TradeId }, tradeDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.TradeId }, entity.ToDto());
         }
 
-        // DELETE: api/Trade/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTradeDTO(int id)
+        // PUT api/trade/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] TradeDTO dto)
         {
-            var tradeDTO = await _context.TradeDTO.FindAsync(id);
-            if (tradeDTO == null)
+            if (id != dto.TradeId) return BadRequest("Id mismatch.");
+
+            var existing = await _repo.GetByIdAsync(id);
+            if (existing is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.TradeDTO.Remove(tradeDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
         }
 
-        private bool TradeDTOExists(int id)
+        // DELETE api/trade/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _context.TradeDTO.Any(e => e.TradeId == id);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
     }
 }

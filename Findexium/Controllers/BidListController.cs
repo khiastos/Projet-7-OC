@@ -1,97 +1,76 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class BidListController : ControllerBase
     {
-        private readonly LocalDbContext _context;
-        private readonly GenericRepository<BidListDTO> _repo;
+        private readonly IGenericRepository<BidList> _repo;
 
-        public BidListController(LocalDbContext context, GenericRepository<BidListDTO> repo)
+        public BidListController(IGenericRepository<BidList> repo)
         {
-            _context = context;
             _repo = repo;
         }
 
-        // GET: api/BidList/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<BidListDTO>> Details(int id)
+        // GET api/bidlist/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            var bidListDTO = await _repo.GetByIdAsync(id);
-
-            if (bidListDTO == null)
-            {
-                return NotFound();
-            }
-
-            return bidListDTO;
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // PUT: api/BidList/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBidListDTO(int id, BidListDTO bidListDTO)
-        {
-            if (id != bidListDTO.BidListId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(bidListDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BidListDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/BidList
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST api/bidlist
         [HttpPost]
-        public async Task<ActionResult<BidListDTO>> PostBidListDTO(BidListDTO bidListDTO)
+        public async Task<IActionResult> Create([FromBody] BidListDTO dto)
         {
-            _context.BidListDTO.Add(bidListDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetBidListDTO", new { id = bidListDTO.BidListId }, bidListDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.BidListId }, entity.ToDto());
         }
 
-        // DELETE: api/BidList/5
-        [HttpDelete("{id}")]
+        // PUT api/bidlist/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] BidListDTO dto)
+        {
+            if (id != dto.BidListId) return BadRequest("Id mismatch.");
+
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
+            {
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
+        }
+
+        // DELETE api/bidlist/5
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var bidListDTO = await _context.BidListDTO.FindAsync(id);
-            if (bidListDTO is null)
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.BidListDTO.Remove(bidListDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
 
-        private bool BidListDTOExists(int id)
-        {
-            return _context.BidListDTO.Any(e => e.BidListId == id);
-        }
     }
 }

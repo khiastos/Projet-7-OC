@@ -1,103 +1,75 @@
-﻿using Findexium.Data;
+﻿using Findexium.Domain;
 using Findexium.DTOs;
+using Findexium.Mappers;
+using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Findexium.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class RatingController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+        private readonly IGenericRepository<Rating> _repo;
 
-        public RatingController(LocalDbContext context)
+        public RatingController(IGenericRepository<Rating> repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
-        // GET: api/Rating
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<RatingDTO>>> GetRatingDTO()
+        // GET api/rating/5
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return await _context.RatingDTO.ToListAsync();
+            var entity = await _repo.GetByIdAsync(id);
+            return entity is null ? NotFound() : Ok(entity.ToDto());
         }
 
-        // GET: api/Rating/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<RatingDTO>> GetRatingDTO(int id)
-        {
-            var ratingDTO = await _context.RatingDTO.FindAsync(id);
-
-            if (ratingDTO == null)
-            {
-                return NotFound();
-            }
-
-            return ratingDTO;
-        }
-
-        // PUT: api/Rating/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRatingDTO(int id, RatingDTO ratingDTO)
-        {
-            if (id != ratingDTO.RatingId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(ratingDTO).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RatingDTOExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Rating
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST api/rating
         [HttpPost]
-        public async Task<ActionResult<RatingDTO>> PostRatingDTO(RatingDTO ratingDTO)
+        public async Task<IActionResult> Create([FromBody] RatingDTO dto)
         {
-            _context.RatingDTO.Add(ratingDTO);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction("GetRatingDTO", new { id = ratingDTO.RatingId }, ratingDTO);
+            var entity = dto.ToEntity();
+            await _repo.AddAsync(entity);
+
+            return CreatedAtAction(nameof(GetById), new { id = entity.RatingId }, entity.ToDto());
         }
 
-        // DELETE: api/Rating/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRatingDTO(int id)
+        // PUT api/rating/5
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] RatingDTO dto)
         {
-            var ratingDTO = await _context.RatingDTO.FindAsync(id);
-            if (ratingDTO == null)
+            if (id != dto.RatingId) return BadRequest("Id mismatch.");
+
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            var updated = dto.ToEntity();
+            await _repo.UpdateAsync(updated);
+
+            return Ok(new
             {
-                return NotFound();
-            }
-
-            _context.RatingDTO.Remove(ratingDTO);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                Message = "Updated successfully",
+                Data = updated.ToDto()
+            });
         }
 
-        private bool RatingDTOExists(int id)
+        // DELETE api/rating/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            return _context.RatingDTO.Any(e => e.RatingId == id);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
+
+            await _repo.DeleteAsync(id);
+
+            return Ok(new
+            {
+                Message = "Deleted successfully",
+                DeletedId = id
+            });
         }
     }
 }

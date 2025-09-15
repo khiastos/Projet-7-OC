@@ -2,6 +2,7 @@
 using Findexium.DTOs;
 using Findexium.Mappers;
 using Findexium.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findexium.Controllers
@@ -27,6 +28,7 @@ namespace Findexium.Controllers
 
         // POST api/bidlist
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] BidListDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -39,6 +41,7 @@ namespace Findexium.Controllers
 
         // PUT api/bidlist/5
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] BidListDTO dto)
         {
             if (id != dto.BidListId) return BadRequest("Id mismatch.");
@@ -58,6 +61,7 @@ namespace Findexium.Controllers
 
         // DELETE api/bidlist/5
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var entity = await _repo.GetByIdAsync(id);

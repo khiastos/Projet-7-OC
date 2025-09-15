@@ -1,9 +1,11 @@
 ﻿using Findexium.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Findexium.Data
 {
-    public class LocalDbContext : DbContext
+    public class LocalDbContext : IdentityDbContext
     {
         public LocalDbContext(DbContextOptions<LocalDbContext> options) : base(options) { }
 
@@ -17,12 +19,5 @@ namespace Findexium.Data
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<RuleName> RuleNames { get; set; }
         public DbSet<Trade> Trades { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Findexium.DTOs.BidListDTO> BidListDTO { get; set; } = default!;
-        public DbSet<Findexium.DTOs.CurvePointDTO> CurvePointDTO { get; set; } = default!;
-        public DbSet<Findexium.DTOs.RatingDTO> RatingDTO { get; set; } = default!;
-        public DbSet<Findexium.DTOs.RuleNameDTO> RuleNameDTO { get; set; } = default!;
-        public DbSet<Findexium.DTOs.TradeDTO> TradeDTO { get; set; } = default!;
-        public DbSet<Findexium.DTOs.UserDTO> UserDTO { get; set; } = default!;
     }
 }

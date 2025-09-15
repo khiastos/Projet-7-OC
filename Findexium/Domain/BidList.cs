@@ -1,14 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Findexium.Domain
 {
     public class BidList
     {
+        [Key]
         public int BidListId { get; set; }
         public string? Account { get; set; }
         public string? BidType { get; set; }
-        public double? BidQuantity { get; set; }
-        public double? AskQuantity { get; set; }
-        public double? Bid { get; set; }
-        public double? Ask { get; set; }
+        public decimal? BidQuantity { get; set; }
+        public decimal? AskQuantity { get; set; }
+        public decimal? Bid { get; set; }
+        public decimal? Ask { get; set; }
         public string? Benchmark { get; set; }
         public DateTime? BidListDate { get; set; }
         public string? Commentary { get; set; }

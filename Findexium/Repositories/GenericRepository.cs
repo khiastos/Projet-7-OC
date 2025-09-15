@@ -1,4 +1,5 @@
-﻿using Findexium.Repositories.Interfaces;
+﻿using Findexium.Data;
+using Findexium.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : class
@@ -6,7 +7,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     private readonly DbContext _context;
     private readonly DbSet<T> _dbSet;
 
-    public GenericRepository(DbContext context)
+    public GenericRepository(LocalDbContext context)
     {
         _context = context;
         _dbSet = _context.Set<T>();

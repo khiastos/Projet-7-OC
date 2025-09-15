@@ -2,6 +2,7 @@
 using Findexium.DTOs;
 using Findexium.Mappers;
 using Findexium.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findexium.Controllers
@@ -27,6 +28,7 @@ namespace Findexium.Controllers
 
         // POST api/rating
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] RatingDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -39,6 +41,7 @@ namespace Findexium.Controllers
 
         // PUT api/rating/5
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RatingDTO dto)
         {
             if (id != dto.RatingId) return BadRequest("Id mismatch.");
@@ -58,6 +61,7 @@ namespace Findexium.Controllers
 
         // DELETE api/rating/5
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var entity = await _repo.GetByIdAsync(id);

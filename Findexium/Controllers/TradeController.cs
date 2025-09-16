@@ -20,10 +20,21 @@ namespace Findexium.Controllers
 
         // GET api/trade/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetById(int id)
         {
             var entity = await _repo.GetByIdAsync(id);
             return entity is null ? NotFound() : Ok(entity.ToDto());
+        }
+
+        // GET api/trade
+        [HttpGet]
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> GetAll()
+        {
+            var entities = await _repo.GetAllAsync();
+            var dtos = entities.Select(e => e.ToDto());
+            return Ok(dtos);
         }
 
         // POST api/trade
@@ -36,7 +47,7 @@ namespace Findexium.Controllers
             var entity = dto.ToEntity();
             await _repo.AddAsync(entity);
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.TradeId }, entity.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity.ToDto());
         }
 
         // PUT api/trade/5
@@ -44,18 +55,18 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] TradeDTO dto)
         {
-            if (id != dto.TradeId) return BadRequest("Id mismatch.");
+            if (id != dto.Id) return BadRequest("Id mismatch.");
 
-            var existing = await _repo.GetByIdAsync(id);
-            if (existing is null) return NotFound();
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound();
 
-            var updated = dto.ToEntity();
-            await _repo.UpdateAsync(updated);
+            dto.ApplyTo(entity);
+            await _repo.UpdateAsync(entity);
 
             return Ok(new
             {
                 Message = "Updated successfully",
-                Data = updated.ToDto()
+                Data = entity.ToDto()
             });
         }
 

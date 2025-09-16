@@ -24,11 +24,11 @@ namespace Findexium.Migrations
 
             modelBuilder.Entity("Findexium.Domain.BidList", b =>
                 {
-                    b.Property<int>("BidListId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BidListId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Account")
                         .HasColumnType("nvarchar(max)");
@@ -93,18 +93,18 @@ namespace Findexium.Migrations
                     b.Property<string>("Trader")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("BidListId");
+                    b.HasKey("Id");
 
                     b.ToTable("BidLists");
                 });
 
             modelBuilder.Entity("Findexium.Domain.CurvePoint", b =>
                 {
-                    b.Property<int>("CurvePointId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CurvePointId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("AsOfDate")
                         .HasColumnType("datetime2");
@@ -121,18 +121,18 @@ namespace Findexium.Migrations
                     b.Property<double?>("Term")
                         .HasColumnType("float");
 
-                    b.HasKey("CurvePointId");
+                    b.HasKey("Id");
 
                     b.ToTable("CurvePoints");
                 });
 
             modelBuilder.Entity("Findexium.Domain.Rating", b =>
                 {
-                    b.Property<int>("RatingId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RatingId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FitchRating")
                         .HasColumnType("nvarchar(max)");
@@ -146,18 +146,18 @@ namespace Findexium.Migrations
                     b.Property<string>("SandPRating")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("RatingId");
+                    b.HasKey("Id");
 
                     b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("Findexium.Domain.RuleName", b =>
                 {
-                    b.Property<int>("RuleNameId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RuleNameId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -177,18 +177,18 @@ namespace Findexium.Migrations
                     b.Property<string>("Template")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("RuleNameId");
+                    b.HasKey("Id");
 
                     b.ToTable("RuleNames");
                 });
 
             modelBuilder.Entity("Findexium.Domain.Trade", b =>
                 {
-                    b.Property<int>("TradeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TradeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Account")
                         .HasColumnType("nvarchar(max)");
@@ -250,7 +250,7 @@ namespace Findexium.Migrations
                     b.Property<string>("Trader")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("TradeId");
+                    b.HasKey("Id");
 
                     b.ToTable("Trades");
                 });

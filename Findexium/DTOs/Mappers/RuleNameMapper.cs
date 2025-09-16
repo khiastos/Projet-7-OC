@@ -9,7 +9,7 @@ namespace Findexium.Mappers
         {
             return new RuleNameDTO
             {
-                RuleNameId = entity.RuleNameId,
+                Id = entity.Id,
                 Name = entity.Name,
                 Description = entity.Description,
                 Json = entity.Json,
@@ -23,7 +23,7 @@ namespace Findexium.Mappers
         {
             return new RuleName
             {
-                RuleNameId = dto.RuleNameId,
+                Id = dto.Id,
                 Name = dto.Name,
                 Description = dto.Description,
                 Json = dto.Json,
@@ -31,6 +31,16 @@ namespace Findexium.Mappers
                 SqlStr = dto.SqlStr,
                 SqlPart = dto.SqlPart
             };
+        }
+
+        public static void ApplyTo(this RuleNameDTO dto, RuleName poco)
+        {
+            poco.Name = dto.Name;
+            poco.Description = dto.Description;
+            poco.Json = dto.Json;
+            poco.Template = dto.Template;
+            poco.SqlStr = dto.SqlStr;
+            poco.SqlPart = dto.SqlPart;
         }
     }
 }

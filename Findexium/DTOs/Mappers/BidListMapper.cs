@@ -9,7 +9,7 @@ namespace Findexium.Mappers
         {
             return new BidListDTO
             {
-                BidListId = entity.BidListId,
+                Id = entity.Id,
                 Account = entity.Account,
                 BidType = entity.BidType,
                 BidQuantity = entity.BidQuantity,
@@ -38,7 +38,7 @@ namespace Findexium.Mappers
         {
             return new BidList
             {
-                BidListId = dto.BidListId,
+                Id = dto.Id,
                 Account = dto.Account,
                 BidType = dto.BidType,
                 BidQuantity = dto.BidQuantity,
@@ -61,6 +61,29 @@ namespace Findexium.Mappers
                 SourceListId = dto.SourceListId,
                 Side = dto.Side
             };
+        }
+
+        public static void ApplyTo(this BidListDTO dto, BidList poco)
+        {
+            poco.Account = dto.Account;
+            poco.BidType = dto.BidType;
+            poco.BidQuantity = dto.BidQuantity;
+            poco.AskQuantity = dto.AskQuantity;
+            poco.Bid = dto.Bid;
+            poco.Ask = dto.Ask;
+            poco.Benchmark = dto.Benchmark;
+            poco.BidListDate = dto.BidListDate;
+            poco.Commentary = dto.Commentary;
+            poco.BidSecurity = dto.BidSecurity;
+            poco.BidStatus = dto.BidStatus;
+            poco.Trader = dto.Trader;
+            poco.Book = dto.Book;
+            poco.CreationName = dto.CreationName;
+            poco.RevisionName = dto.RevisionName;
+            poco.DealName = dto.DealName;
+            poco.DealType = dto.DealType;
+            poco.SourceListId = dto.SourceListId;
+            poco.Side = dto.Side;
         }
     }
 }

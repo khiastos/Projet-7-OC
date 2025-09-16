@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findexium.Controllers
@@ -7,6 +8,8 @@ namespace Findexium.Controllers
     public class HomeController : ControllerBase
     {
         [HttpGet]
+        [Route("User")]
+        [Authorize(Roles = "User")]
         public IActionResult Get()
         {
             return Ok();
@@ -14,6 +17,7 @@ namespace Findexium.Controllers
 
         [HttpGet]
         [Route("Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Admin()
         {
             return Ok();

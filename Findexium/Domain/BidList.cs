@@ -5,7 +5,7 @@ namespace Findexium.Domain
     public class BidList
     {
         [Key]
-        public int BidListId { get; set; }
+        public int Id { get; set; }
         public string? Account { get; set; }
         public string? BidType { get; set; }
         public decimal? BidQuantity { get; set; }

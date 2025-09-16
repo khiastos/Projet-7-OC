@@ -5,7 +5,7 @@ namespace Findexium.DTOs
     public class RuleNameDTO
     {
         [Key]
-        public int RuleNameId { get; set; }
+        public int Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string? Json { get; set; }

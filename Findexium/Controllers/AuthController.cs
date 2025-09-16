@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/Auth")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _users;
@@ -12,28 +12,33 @@ public class AuthController : ControllerBase
     public AuthController(UserManager<IdentityUser> users, IJwtTokenService tokens)
     { _users = users; _tokens = tokens; }
 
-    public record RegisterDto(string Email, string UserName, string Password);
-    public record LoginDto(string UserNameOrEmail, string Password);
+    public record RegisterDto(string Email, string Password);
+    public record LoginDto(string Email, string Password);
 
-    [HttpPost("register")]
+    [HttpPost("Register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        var user = new IdentityUser { Email = dto.Email, UserName = dto.UserName, EmailConfirmed = true };
+        var user = new IdentityUser
+        {
+            UserName = dto.Email,
+            Email = dto.Email,
+            EmailConfirmed = true
+        };
         var res = await _users.CreateAsync(user, dto.Password);
         if (!res.Succeeded) return BadRequest(res.Errors.Select(e => e.Description));
 
         await _users.AddToRoleAsync(user, "User");
 
-        return Ok(new { user.Id, user.UserName, user.Email });
+        return Ok(new { user.Id, user.Email });
     }
 
-    [HttpPost("login")]
+    [HttpPost("Login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var user = await _users.FindByNameAsync(dto.UserNameOrEmail)
-               ?? await _users.FindByEmailAsync(dto.UserNameOrEmail);
+        var user = await _users.FindByNameAsync(dto.Email)
+               ?? await _users.FindByEmailAsync(dto.Email);
         if (user is null) return Unauthorized("Identifiants invalides.");
 
         var ok = await _users.CheckPasswordAsync(user, dto.Password);

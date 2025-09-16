@@ -9,7 +9,7 @@ namespace Findexium.Mappers
         {
             return new RatingDTO
             {
-                RatingId = entity.RatingId,
+                Id = entity.Id,
                 MoodysRating = entity.MoodysRating,
                 SandPRating = entity.SandPRating,
                 FitchRating = entity.FitchRating,
@@ -21,12 +21,20 @@ namespace Findexium.Mappers
         {
             return new Rating
             {
-                RatingId = dto.RatingId,
+                Id = dto.Id,
                 MoodysRating = dto.MoodysRating,
                 SandPRating = dto.SandPRating,
                 FitchRating = dto.FitchRating,
                 OrderNumber = dto.OrderNumber
             };
+        }
+
+        public static void ApplyTo(this RatingDTO dto, Rating poco)
+        {
+            poco.MoodysRating = dto.MoodysRating;
+            poco.SandPRating = dto.SandPRating;
+            poco.FitchRating = dto.FitchRating;
+            poco.OrderNumber = dto.OrderNumber;
         }
     }
 }

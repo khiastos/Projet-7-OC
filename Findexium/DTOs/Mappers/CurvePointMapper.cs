@@ -9,7 +9,7 @@ namespace Findexium.Mappers
         {
             return new CurvePointDTO
             {
-                CurvePointId = entity.CurvePointId,
+                Id = entity.Id,
                 CurveId = entity.CurveId,
                 AsOfDate = entity.AsOfDate,
                 Term = entity.Term,
@@ -22,13 +22,20 @@ namespace Findexium.Mappers
         {
             return new CurvePoint
             {
-                CurvePointId = dto.CurvePointId,
+                Id = dto.Id,
                 CurveId = dto.CurveId,
                 AsOfDate = dto.AsOfDate,
                 Term = dto.Term,
                 CurvePointValue = dto.CurvePointValue,
                 CreationDate = dto.CreationDate
             };
+        }
+
+        public static void ApplyTo(this CurvePointDTO dto, CurvePoint poco)
+        {
+            poco.AsOfDate = dto.AsOfDate;
+            poco.Term = dto.Term;
+            poco.CurvePointValue = dto.CurvePointValue;
         }
     }
 }

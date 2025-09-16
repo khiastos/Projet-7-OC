@@ -9,7 +9,7 @@ namespace Findexium.Mappers
         {
             return new TradeDTO
             {
-                TradeId = entity.TradeId,
+                Id = entity.Id,
                 Account = entity.Account,
                 AccountType = entity.AccountType,
                 BuyQuantity = entity.BuyQuantity,
@@ -37,7 +37,7 @@ namespace Findexium.Mappers
         {
             return new Trade
             {
-                TradeId = dto.TradeId,
+                Id = dto.Id,
                 Account = dto.Account,
                 AccountType = dto.AccountType,
                 BuyQuantity = dto.BuyQuantity,
@@ -59,6 +59,27 @@ namespace Findexium.Mappers
                 SourceListId = dto.SourceListId,
                 Side = dto.Side
             };
+        }
+
+        public static void ApplyTo(this TradeDTO dto, Trade poco)
+        {
+            poco.Account = dto.Account;
+            poco.AccountType = dto.AccountType;
+            poco.BuyQuantity = dto.BuyQuantity;
+            poco.SellQuantity = dto.SellQuantity;
+            poco.BuyPrice = dto.BuyPrice;
+            poco.SellPrice = dto.SellPrice;
+            poco.TradeSecurity = dto.TradeSecurity;
+            poco.TradeStatus = dto.TradeStatus;
+            poco.Trader = dto.Trader;
+            poco.Benchmark = dto.Benchmark;
+            poco.Book = dto.Book;
+            poco.CreationName = dto.CreationName;
+            poco.RevisionName = dto.RevisionName;
+            poco.DealName = dto.DealName;
+            poco.DealType = dto.DealType;
+            poco.SourceListId = dto.SourceListId;
+            poco.Side = dto.Side;
         }
     }
 }

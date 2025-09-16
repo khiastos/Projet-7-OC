@@ -5,7 +5,7 @@ namespace Findexium.DTOs
     public class TradeDTO
     {
         [Key]
-        public int TradeId { get; set; }
+        public int Id { get; set; }
         public string? Account { get; set; }
         public string? AccountType { get; set; }
         public decimal? BuyQuantity { get; set; }

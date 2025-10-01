@@ -12,8 +12,8 @@ public sealed class JwtTokenService : IJwtTokenService
 
     public JwtTokenService(IConfiguration configuration)
     {
-        _issuer = configuration["Jwt:Issuer"] = "";
-        _audience = configuration["Jwt:Audience"] = "";
+        _issuer = configuration["Jwt:Issuer"];
+        _audience = configuration["Jwt:Audience"];
         var key = configuration["Jwt:Key"];
 
         _creds = new SigningCredentials(

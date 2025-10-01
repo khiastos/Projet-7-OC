@@ -1,4 +1,5 @@
-using System.Text;
+﻿using System.Text;
+using Findexium.Api.Middleware;
 using Findexium.Data;
 using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,11 +11,21 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+// Rendu des logs dans la console
+builder.Logging.ClearProviders();
+builder.Logging.AddSimpleConsole(o =>
+{
+    o.IncludeScopes = false;
+    o.SingleLine = true;
+    o.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+});
+builder.Services.AddTransient<EndpointAccessLoggingMiddleware>();
+
 // EF Core
 builder.Services.AddDbContext<LocalDbContext>(opt =>
     opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-// Identity Core + r�les (hash auto, gestion users)
+// Identity Core + rôles (hash auto, gestion users)
 builder.Services.AddIdentityCore<IdentityUser>(i =>
 {
     i.Password.RequiredLength = 8;
@@ -66,7 +77,6 @@ builder.Services.AddSwaggerGen(c =>
 
 // Service qui fabrique le token (util)
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 var app = builder.Build();
@@ -77,6 +87,8 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<EndpointAccessLoggingMiddleware>();
 
 app.MapControllers();
 

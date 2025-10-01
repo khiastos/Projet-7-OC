@@ -37,8 +37,7 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var user = await _users.FindByNameAsync(dto.Email)
-               ?? await _users.FindByEmailAsync(dto.Email);
+        var user = await _users.FindByEmailAsync(dto.Email);
         if (user is null) return Unauthorized("Identifiants invalides.");
 
         var ok = await _users.CheckPasswordAsync(user, dto.Password);

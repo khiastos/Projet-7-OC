@@ -1,24 +1,27 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Findexium.Domain
 {
     public class Trade
     {
+        [Key]
         public int Id { get; set; }
         public string? Account { get; set; }
         public string? AccountType { get; set; }
-        public decimal? BuyQuantity { get; set; }
-        public decimal? SellQuantity { get; set; }
-        public decimal? BuyPrice { get; set; }
-        public decimal? SellPrice { get; set; }
-        public DateTime? TradeDate { get; set; }
+        public decimal BuyQuantity { get; set; }
+        public decimal SellQuantity { get; set; }
+        public decimal BuyPrice { get; set; }
+        public decimal SellPrice { get; set; }
+        public DateTime TradeDate { get; set; }
         public string? TradeSecurity { get; set; }
         public string? TradeStatus { get; set; }
         public string? Trader { get; set; }
         public string? Benchmark { get; set; }
         public string? Book { get; set; }
         public string? CreationName { get; set; }
-        public DateTime? CreationDate { get; set; }
+        public DateTime CreationDate { get; set; }
         public string? RevisionName { get; set; }
-        public DateTime? RevisionDate { get; set; }
+        public DateTime RevisionDate { get; set; }
         public string? DealName { get; set; }
         public string? DealType { get; set; }
         public string? SourceListId { get; set; }

@@ -4,28 +4,87 @@ namespace Findexium.DTOs
 {
     public class BidListDTO
     {
-        [Key]
         public int Id { get; set; }
-        public string? Account { get; set; }
-        public string? BidType { get; set; }
-        public decimal? BidQuantity { get; set; }
-        public decimal? AskQuantity { get; set; }
-        public decimal? Bid { get; set; }
-        public decimal? Ask { get; set; }
-        public string? Benchmark { get; set; }
-        public DateTime? BidListDate { get; set; }
-        public string? Commentary { get; set; }
-        public string? BidSecurity { get; set; }
-        public string? BidStatus { get; set; }
-        public string? Trader { get; set; }
-        public string? Book { get; set; }
-        public string? CreationName { get; set; }
-        public DateTime? CreationDate { get; set; }
-        public string? RevisionName { get; set; }
-        public DateTime? RevisionDate { get; set; }
-        public string? DealName { get; set; }
-        public string? DealType { get; set; }
-        public string? SourceListId { get; set; }
-        public string? Side { get; set; }
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Account { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string BidType { get; set; } = default!;
+
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        [Range(0, 1_000_000)]
+        public decimal BidQuantity { get; set; }
+
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        [Range(0, 1_000_000)]
+        public decimal AskQuantity { get; set; }
+
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        [Range(0, 1_000_000)]
+        public decimal Bid { get; set; }
+
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        [Range(0, 1_000_000)]
+        public decimal Ask { get; set; }
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Benchmark { get; set; } = default!;
+
+        [DataType(DataType.DateTime)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public DateTime BidListDate { get; set; }
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Commentary { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string BidSecurity { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string BidStatus { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Trader { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Book { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string CreationName { get; set; } = default!;
+
+        [DataType(DataType.DateTime)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public DateTime CreationDate { get; set; }
+        public string RevisionName { get; set; } = default!;
+
+        [DataType(DataType.DateTime)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public DateTime RevisionDate { get; set; }
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string DealName { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string DealType { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string SourceListId { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string Side { get; set; } = default!;
     }
 }

@@ -4,11 +4,22 @@ namespace Findexium.DTOs
 {
     public class RatingDTO
     {
-        [Key]
         public int Id { get; set; }
-        public string? MoodysRating { get; set; }
-        public string? SandPRating { get; set; }
-        public string? FitchRating { get; set; }
-        public byte? OrderNumber { get; set; }
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string MoodysRating { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string SandPRating { get; set; } = default!;
+
+        [StringLength(100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public string FitchRating { get; set; } = default!;
+
+        [Range(0, 100)]
+        [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
+        public byte OrderNumber { get; set; } = default!;
     }
 }

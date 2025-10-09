@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Findexium.DTOs
 {
     public class TradeDTO
     {
+        [JsonIgnore]
         public int Id { get; set; }
+
         [Required(ErrorMessage = "Ce champs ne doit pas être vide")]
         public string Account { get; set; } = default!;
         [Required(ErrorMessage = "Ce champs ne doit pas être vide")]

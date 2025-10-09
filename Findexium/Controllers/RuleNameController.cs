@@ -23,8 +23,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetById(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            return entity is null ? NotFound() : Ok(entity.ToDto());
+            var ruleName = await _repo.GetByIdAsync(id);
+            return ruleName is null ? NotFound() : Ok(ruleName.ToDto());
         }
 
         // GET api/rulename
@@ -32,8 +32,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _repo.GetAllAsync();
-            var dtos = entities.Select(e => e.ToDto());
+            var ruleNames = await _repo.GetAllAsync();
+            var dtos = ruleNames.Select(e => e.ToDto());
             return Ok(dtos);
         }
 
@@ -44,10 +44,10 @@ namespace Findexium.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var entity = dto.ToEntity();
-            await _repo.AddAsync(entity);
+            var ruleName = dto.ToEntity();
+            await _repo.AddAsync(ruleName);
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id = ruleName.Id }, ruleName.ToDto());
         }
 
         // PUT api/rulename/5
@@ -55,18 +55,16 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RuleNameDTO dto)
         {
-            if (id != dto.Id) return BadRequest("Id mismatch.");
+            var ruleName = await _repo.GetByIdAsync(id);
+            if (ruleName is null) return NotFound("RuleName not found");
 
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
-
-            dto.ApplyTo(entity);
-            await _repo.UpdateAsync(entity);
+            dto.ApplyTo(ruleName);
+            await _repo.UpdateAsync(ruleName);
 
             return Ok(new
             {
                 Message = "Updated successfully",
-                Data = entity.ToDto()
+                Data = ruleName.ToDto()
             });
         }
 
@@ -75,8 +73,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
+            var ruleName = await _repo.GetByIdAsync(id);
+            if (ruleName is null) return NotFound();
 
             await _repo.DeleteAsync(id);
 

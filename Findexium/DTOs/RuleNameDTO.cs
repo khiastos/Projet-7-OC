@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Findexium.DTOs
 {
     public class RuleNameDTO
     {
+        [JsonIgnore]
         public int Id { get; set; }
 
         [StringLength(100)]

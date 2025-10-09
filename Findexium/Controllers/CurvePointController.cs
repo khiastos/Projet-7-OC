@@ -23,8 +23,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetById(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            return entity is null ? NotFound() : Ok(entity.ToDto());
+            var curvePoint = await _repo.GetByIdAsync(id);
+            return curvePoint is null ? NotFound() : Ok(curvePoint.ToDto());
         }
 
         // GET api/curvepoint
@@ -32,8 +32,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _repo.GetAllAsync();
-            var dtos = entities.Select(e => e.ToDto());
+            var curvePoints = await _repo.GetAllAsync();
+            var dtos = curvePoints.Select(e => e.ToDto());
             return Ok(dtos);
         }
 
@@ -44,10 +44,10 @@ namespace Findexium.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var entity = dto.ToEntity();
-            await _repo.AddAsync(entity);
+            var curvePoint = dto.ToEntity();
+            await _repo.AddAsync(curvePoint);
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id = curvePoint.Id }, curvePoint.ToDto());
         }
 
         // PUT api/curvepoint/5
@@ -55,18 +55,16 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] CurvePointDTO dto)
         {
-            if (id != dto.Id) return BadRequest("Id mismatch.");
+            var curvePoint = await _repo.GetByIdAsync(id);
+            if (curvePoint is null) return NotFound("CurvePoint not found");
 
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
-
-            dto.ApplyTo(entity);
-            await _repo.UpdateAsync(entity);
+            dto.ApplyTo(curvePoint);
+            await _repo.UpdateAsync(curvePoint);
 
             return Ok(new
             {
                 Message = "Updated successfully",
-                Data = entity.ToDto()
+                Data = curvePoint.ToDto()
             });
         }
 
@@ -75,8 +73,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
+            var curvePoint = await _repo.GetByIdAsync(id);
+            if (curvePoint is null) return NotFound();
 
             await _repo.DeleteAsync(id);
 

@@ -23,8 +23,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetById(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            return entity is null ? NotFound() : Ok(entity.ToDto());
+            var rating = await _repo.GetByIdAsync(id);
+            return rating is null ? NotFound() : Ok(rating.ToDto());
         }
 
         // GET api/rating
@@ -32,8 +32,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> GetAll()
         {
-            var entities = await _repo.GetAllAsync();
-            var dtos = entities.Select(e => e.ToDto());
+            var ratings = await _repo.GetAllAsync();
+            var dtos = ratings.Select(e => e.ToDto());
             return Ok(dtos);
         }
 
@@ -44,10 +44,10 @@ namespace Findexium.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var entity = dto.ToEntity();
-            await _repo.AddAsync(entity);
+            var rating = dto.ToEntity();
+            await _repo.AddAsync(rating);
 
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity.ToDto());
+            return CreatedAtAction(nameof(GetById), new { id = rating.Id }, rating.ToDto());
         }
 
         // PUT api/rating/5
@@ -55,18 +55,16 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RatingDTO dto)
         {
-            if (id != dto.Id) return BadRequest("Id mismatch.");
+            var rating = await _repo.GetByIdAsync(id);
+            if (rating is null) return NotFound("Rating not found");
 
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
-
-            dto.ApplyTo(entity);
-            await _repo.UpdateAsync(entity);
+            dto.ApplyTo(rating);
+            await _repo.UpdateAsync(rating);
 
             return Ok(new
             {
                 Message = "Updated successfully",
-                Data = entity.ToDto()
+                Data = rating.ToDto()
             });
         }
 
@@ -75,8 +73,8 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null) return NotFound();
+            var rating = await _repo.GetByIdAsync(id);
+            if (rating is null) return NotFound();
 
             await _repo.DeleteAsync(id);
 

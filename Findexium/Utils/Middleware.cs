@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace Findexium.Api.Middleware
+﻿namespace Findexium.Api.Middleware
 {
     public sealed class EndpointAccessLoggingMiddleware : IMiddleware
     {
@@ -14,10 +12,8 @@ namespace Findexium.Api.Middleware
             var method = ctx.Request.Method;
             var route = (ctx.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText
                         ?? ctx.Request.Path.ToString();
-            var userEmail =
-                ctx.User.FindFirstValue(ClaimTypes.Email)
-                ?? ctx.User.FindFirstValue("email")
-                ?? (ctx.User.Identity?.IsAuthenticated == true ? ctx.User.Identity?.Name : "anonymous");
+            var userEmail = ctx.User.Identity?.Name
+                 ?? "anonymous";
 
             _logger.LogInformation("IN  {Method} {Route} by {UserId}", method, route, userEmail);
 

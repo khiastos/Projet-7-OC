@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findexium", "Findexium\Findexium.csproj", "{D24EA5C2-0ECA-18DD-3E50-09F2B8150624}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findexium.Tests", "Findexium.Tests\Findexium.Tests.csproj", "{D568DB85-92B7-44C3-A679-350FF4D3C20B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D24EA5C2-0ECA-18DD-3E50-09F2B8150624}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D24EA5C2-0ECA-18DD-3E50-09F2B8150624}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D24EA5C2-0ECA-18DD-3E50-09F2B8150624}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D568DB85-92B7-44C3-A679-350FF4D3C20B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D568DB85-92B7-44C3-A679-350FF4D3C20B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D568DB85-92B7-44C3-A679-350FF4D3C20B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D568DB85-92B7-44C3-A679-350FF4D3C20B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

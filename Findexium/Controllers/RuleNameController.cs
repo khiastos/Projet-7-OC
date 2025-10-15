@@ -55,17 +55,15 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RuleNameDTO dto)
         {
-            var ruleName = await _repo.GetByIdAsync(id);
-            if (ruleName is null) return NotFound("RuleName not found");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            dto.ApplyTo(ruleName);
-            await _repo.UpdateAsync(ruleName);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("RuleName not found");
 
-            return Ok(new
-            {
-                Message = "Updated successfully",
-                Data = ruleName.ToDto()
-            });
+            dto.ApplyTo(entity);
+            await _repo.UpdateAsync(entity);
+
+            return Ok(entity.ToDto());
         }
 
         // DELETE api/rulename/5
@@ -73,16 +71,11 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var ruleName = await _repo.GetByIdAsync(id);
-            if (ruleName is null) return NotFound();
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("RuleName not found");
 
-            await _repo.DeleteAsync(id);
-
-            return Ok(new
-            {
-                Message = "Deleted successfully",
-                DeletedId = id
-            });
+            await _repo.DeleteAsync(entity.Id);
+            return NoContent();
         }
     }
 }

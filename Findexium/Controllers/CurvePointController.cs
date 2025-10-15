@@ -55,17 +55,15 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] CurvePointDTO dto)
         {
-            var curvePoint = await _repo.GetByIdAsync(id);
-            if (curvePoint is null) return NotFound("CurvePoint not found");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            dto.ApplyTo(curvePoint);
-            await _repo.UpdateAsync(curvePoint);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("CurvePoint not found");
 
-            return Ok(new
-            {
-                Message = "Updated successfully",
-                Data = curvePoint.ToDto()
-            });
+            dto.ApplyTo(entity);
+            await _repo.UpdateAsync(entity);
+
+            return Ok(entity.ToDto());
         }
 
         // DELETE api/curvepoint/5
@@ -73,16 +71,11 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var curvePoint = await _repo.GetByIdAsync(id);
-            if (curvePoint is null) return NotFound();
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("CurvePoint not found");
 
-            await _repo.DeleteAsync(id);
-
-            return Ok(new
-            {
-                Message = "Deleted successfully",
-                DeletedId = id
-            });
+            await _repo.DeleteAsync(entity.Id);
+            return NoContent();
         }
     }
 }

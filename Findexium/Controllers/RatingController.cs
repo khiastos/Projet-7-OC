@@ -55,17 +55,15 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] RatingDTO dto)
         {
-            var rating = await _repo.GetByIdAsync(id);
-            if (rating is null) return NotFound("Rating not found");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            dto.ApplyTo(rating);
-            await _repo.UpdateAsync(rating);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("Rating not found");
 
-            return Ok(new
-            {
-                Message = "Updated successfully",
-                Data = rating.ToDto()
-            });
+            dto.ApplyTo(entity);
+            await _repo.UpdateAsync(entity);
+
+            return Ok(entity.ToDto());
         }
 
         // DELETE api/rating/5
@@ -73,16 +71,11 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var rating = await _repo.GetByIdAsync(id);
-            if (rating is null) return NotFound();
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("Rating not found");
 
-            await _repo.DeleteAsync(id);
-
-            return Ok(new
-            {
-                Message = "Deleted successfully",
-                DeletedId = id
-            });
+            await _repo.DeleteAsync(entity.Id);
+            return NoContent();
         }
     }
 }

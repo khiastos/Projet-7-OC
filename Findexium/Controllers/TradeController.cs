@@ -55,17 +55,15 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] TradeDTO dto)
         {
-            var trade = await _repo.GetByIdAsync(id);
-            if (trade is null) return NotFound("Trade not found");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            dto.ApplyTo(trade);
-            await _repo.UpdateAsync(trade);
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("Trade not found");
 
-            return Ok(new
-            {
-                Message = "Updated successfully",
-                Data = trade.ToDto()
-            });
+            dto.ApplyTo(entity);
+            await _repo.UpdateAsync(entity);
+
+            return Ok(entity.ToDto());
         }
 
         // DELETE api/trade/5
@@ -73,16 +71,11 @@ namespace Findexium.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var trade = await _repo.GetByIdAsync(id);
-            if (trade is null) return NotFound();
+            var entity = await _repo.GetByIdAsync(id);
+            if (entity is null) return NotFound("Trade not found");
 
-            await _repo.DeleteAsync(id);
-
-            return Ok(new
-            {
-                Message = "Deleted successfully",
-                DeletedId = id
-            });
+            await _repo.DeleteAsync(entity.Id);
+            return NoContent();
         }
     }
 }

@@ -11,6 +11,5 @@ namespace Findexium.Domain
         public double Term { get; set; }
         public double CurvePointValue { get; set; }
         public DateTime CreationDate { get; set; }
-
     }
 }

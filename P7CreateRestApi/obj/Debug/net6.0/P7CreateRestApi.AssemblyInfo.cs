@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Findexium.Tests")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("P7CreateRestApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+767549083445b9ebdd25ebd6dd81a41305297c1d")]
-[assembly: System.Reflection.AssemblyProductAttribute("Findexium.Tests")]
-[assembly: System.Reflection.AssemblyTitleAttribute("Findexium.Tests")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b041877cda0eabbcf22d1ac131e4ef38715dfec9")]
+[assembly: System.Reflection.AssemblyProductAttribute("P7CreateRestApi")]
+[assembly: System.Reflection.AssemblyTitleAttribute("P7CreateRestApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Généré par la classe MSBuild WriteCodeFragment.

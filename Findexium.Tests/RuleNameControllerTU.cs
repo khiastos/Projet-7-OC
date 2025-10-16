@@ -1,233 +1,212 @@
 ﻿using Findexium.Controllers;
-using Findexium.Data;
 using Findexium.Domain;
 using Findexium.DTOs;
 using Findexium.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 
-namespace Findexium.Tests.Controllers
+namespace Findexium.Tests.Controllers;
+
+public class RuleNameController_UnitTests
 {
-    public class RuleNameControllerTests
+    // Helpers
+    private static RuleName MakeEntity(int id, string name) => new() { Id = id, Name = name };
+    private static List<RuleName> Seed() => new()
     {
-        // Helper pour créer un DbContext en mémoire avec des données initiales
-        private static LocalDbContext GetDbContext(params RuleName[] seed)
-        {
-            var options = new DbContextOptionsBuilder<LocalDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+        MakeEntity(1, "Rule-1"),
+        MakeEntity(2, "Rule-2"),
+        MakeEntity(3, "Rule-3"),
+    };
 
-            var ctx = new LocalDbContext(options);
-            if (seed?.Length > 0)
+    [Fact]
+    public async Task GetAll_returnsOK200_with_items()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetAllAsync()).ReturnsAsync(Seed());
+        var controller = new RuleNameController(repo.Object);
+
+        // Act
+        var action = await controller.GetAll();
+
+        // Assert
+        var ok = Assert.IsType<OkObjectResult>(action);
+        var items = Assert.IsAssignableFrom<IEnumerable<RuleNameDTO>>(ok.Value);
+        Assert.Equal(3, items.Count());
+        repo.Verify(r => r.GetAllAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetById_returnsOK200()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(MakeEntity(2, "Rule-2"));
+        var controller = new RuleNameController(repo.Object);
+
+        // Act
+        var action = await controller.GetById(2);
+
+        // Assert
+        var ok = Assert.IsType<OkObjectResult>(action);
+        var dto = Assert.IsType<RuleNameDTO>(ok.Value);
+        Assert.Equal(2, dto.Id);
+        Assert.Equal("Rule-2", dto.Name);
+        repo.Verify(r => r.GetByIdAsync(2), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetById_returnsNotFound404()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((RuleName?)null);
+        var controller = new RuleNameController(repo.Object);
+
+        // Act
+        var action = await controller.GetById(99);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(action);
+        repo.Verify(r => r.GetByIdAsync(99), Times.Once);
+    }
+
+    [Fact]
+    public async Task Create_returnsCreated201()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        RuleName? added = null;
+        repo.Setup(r => r.AddAsync(It.IsAny<RuleName>()))
+            .Callback<RuleName>(e =>
             {
-                ctx.RuleNames.AddRange(seed);
-                ctx.SaveChanges();
-            }
-            return ctx;
-        }
+                added = e;
+                e.Id = 42;
+            })
+            .Returns(Task.CompletedTask);
 
-        // Helper pour obtenir des entités initiales
-        private RuleName[] GetInitialDbEntities()
-        {
-            return new RuleName[]
-             {
-                new RuleName {Id = 1, Name="Rule-1"},
-                new RuleName {Id = 2, Name="Rule-2"},
-                new RuleName {Id = 3, Name="Rule-3"},
-            };
-        }
+        var controller = new RuleNameController(repo.Object);
+        var newDto = new RuleNameDTO { Name = "Rule-New" };
 
-        // Helper pour créer un controller avec une base de données en mémoire, avec un tuple de retour
-        private (RuleNameController controller, LocalDbContext ctx) GetControllerWithInMemoryDb(params RuleName[] seed)
-        {
-            var ctx = GetDbContext(seed);
-            var repo = new GenericRepository<RuleName>(ctx);
-            var controller = new RuleNameController(repo);
-            return (controller, ctx);
-        }
+        // Act
+        var action = await controller.Create(newDto);
 
-        [Fact]
-        public async Task GetAll_returnsOK200()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
+        // Assert
+        var created = Assert.IsType<CreatedAtActionResult>(action);
+        var dto = Assert.IsType<RuleNameDTO>(created.Value);
+        Assert.Equal("Rule-New", dto.Name);
+        Assert.Equal(42, dto.Id);
+        repo.Verify(r => r.AddAsync(It.IsAny<RuleName>()), Times.Once);
+        Assert.NotNull(added);
+        Assert.Equal("Rule-New", added!.Name);
+    }
 
-            // Act = appelle la méthode GetAll du controller
-            var action = await controller.GetAll();
+    [Fact]
+    public async Task Create_returns400_when_model_invalid()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        var controller = new RuleNameController(repo.Object);
+        controller.ModelState.AddModelError("Name", "Required");
 
-            // Assert = vérifie que la réponse est bien 200
-            var ok = Assert.IsType<OkObjectResult>(action);
-            // Assert = vérifie que le contenu est bien du bon type
-            var items = Assert.IsAssignableFrom<IEnumerable<RuleNameDTO>>(ok.Value);
-            // Assert = vérifie que le nombre d'éléments est correct
-            Assert.Equal(3, items.Count());
-        }
+        // Act
+        var action = await controller.Create(new RuleNameDTO { Name = null! });
 
-        [Fact]
-        public async Task GetById_returnsOK200()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(action);
+        repo.Verify(r => r.AddAsync(It.IsAny<RuleName>()), Times.Never);
+    }
 
-            // Act
-            var action = await controller.GetById(2);
+    [Fact]
+    public async Task Update_returnsOK200()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        var existing = MakeEntity(2, "Rule-2");
+        repo.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(existing);
+        repo.Setup(r => r.UpdateAsync(It.IsAny<RuleName>())).Returns(Task.CompletedTask);
+        var controller = new RuleNameController(repo.Object);
 
-            // Assert = vérifie que la réponse est bien 200
-            var ok = Assert.IsType<OkObjectResult>(action);
-            // Assert = vérifie que le contenu est bien du bon type
-            var dto = Assert.IsType<RuleNameDTO>(ok.Value);
-            // Assert = vérifie que le contenu est correct
-            Assert.Equal(2, dto.Id);
-            Assert.Equal("Rule-2", dto.Name);
-        }
+        // Act
+        var action = await controller.Update(2, new RuleNameDTO { Name = "Name-Updated" });
 
-        [Fact]
-        public async Task GetById_returnsNotFound404()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
+        // Assert
+        var ok = Assert.IsType<OkObjectResult>(action);
+        var dto = Assert.IsType<RuleNameDTO>(ok.Value);
+        Assert.Equal(2, dto.Id);
+        Assert.Equal("Name-Updated", dto.Name);
+        repo.Verify(r => r.GetByIdAsync(2), Times.Once);
+        repo.Verify(r => r.UpdateAsync(It.Is<RuleName>(r => r.Id == 2 && r.Name == "Name-Updated")), Times.Once);
+    }
 
-            // Act
-            var action = await controller.GetById(99);
+    [Fact]
+    public async Task Update_returnsNotFound404()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((RuleName?)null);
+        var controller = new RuleNameController(repo.Object);
 
-            // Assert = vérifie que la réponse est bien 404
-            Assert.IsType<NotFoundResult>(action);
-        }
+        // Act
+        var action = await controller.Update(99, new RuleNameDTO { Name = "Name-Updated" });
 
-        [Fact]
-        public async Task Create_returnsCreated201()
-        {
-            // Arrange = crée le controller avec une base de données initialisée + l'entité à ajouter
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            var newDto = new RuleNameDTO { Name = "Rule-New" };
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
+        // Assert
+        var notFound = Assert.IsType<NotFoundObjectResult>(action);
+        Assert.Equal("RuleName not found", notFound.Value);
+        repo.Verify(r => r.GetByIdAsync(99), Times.Once);
+        repo.Verify(r => r.UpdateAsync(It.IsAny<RuleName>()), Times.Never);
+    }
 
-            // Act
-            var action = await controller.Create(newDto);
+    [Fact]
+    public async Task Update_returns400_when_model_invalid()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        var controller = new RuleNameController(repo.Object);
+        controller.ModelState.AddModelError("Name", "Required");
 
-            // Assert = vérifie que la réponse est bien 201
-            var created = Assert.IsType<CreatedAtActionResult>(action);
-            // Assert = vérifie que le contenu est bien du bon type
-            var dto = Assert.IsType<RuleNameDTO>(created.Value);
-            // Assert = vérifie que le contenu est correct
-            Assert.Equal("Rule-New", dto.Name);
-        }
+        // Act
+        var action = await controller.Update(2, new RuleNameDTO { Name = null! });
 
-        [Fact]
-        public async Task Create_returns400_when_model_invalid()
-        {
-            // Arrange (sans base de données, on mock le repo)
-            var repo = new Mock<IGenericRepository<RuleName>>();
-            var controller = new RuleNameController(repo.Object);
-            controller.ModelState.AddModelError("Name", "Required");
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(action);
+        repo.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        repo.Verify(r => r.UpdateAsync(It.IsAny<RuleName>()), Times.Never);
+    }
 
-            // Act
-            var action = await controller.Create(new RuleNameDTO { Name = null! });
+    [Fact]
+    public async Task Delete_returnsNoContent204()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(MakeEntity(2, "Rule-2"));
+        repo.Setup(r => r.DeleteAsync(2)).Returns(Task.CompletedTask);
+        var controller = new RuleNameController(repo.Object);
 
-            // Assert = vérifie que la réponse est bien 400
-            var bad = Assert.IsType<BadRequestObjectResult>(action);
-            // Assert = le repo n'est pas appelé
-            repo.Verify(r => r.AddAsync(It.IsAny<RuleName>()), Times.Never);
-        }
+        // Act
+        var action = await controller.Delete(2);
 
-        [Fact]
-        public async Task Update_returnsOK200()
-        {
-            // Arrange = crée le controller avec une base de données initialisée + l'entité à modifier
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            var updateDto = new RuleNameDTO { Name = "Name-Updated" };
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
+        // Assert
+        Assert.IsType<NoContentResult>(action);
+        repo.Verify(r => r.GetByIdAsync(2), Times.Once);
+        repo.Verify(r => r.DeleteAsync(2), Times.Once);
+    }
 
-            // Act
-            var action = await controller.Update(2, updateDto);
+    [Fact]
+    public async Task Delete_returnsNotFound404()
+    {
+        // Arrange
+        var repo = new Mock<IGenericRepository<RuleName>>();
+        repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((RuleName?)null);
+        var controller = new RuleNameController(repo.Object);
 
-            // Assert = vérifie que la réponse est bien 200
-            var ok = Assert.IsType<OkObjectResult>(action);
-            // Assert = vérifie que le contenu est bien du bon type
-            var dto = Assert.IsType<RuleNameDTO>(ok.Value);
-            // Assert = vérifie que le contenu est correct
-            Assert.Equal(2, dto.Id);
-            Assert.Equal("Name-Updated", dto.Name);
-        }
+        // Act
+        var action = await controller.Delete(99);
 
-        [Fact]
-        public async Task Update_returnsNotFound404()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            var updateDto = new RuleNameDTO { Name = "Name-Updated" };
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
-
-            // Act
-            var action = await controller.Update(99, updateDto);
-
-            // Assert = vérifie que la réponse est bien 404
-            var notFound = Assert.IsType<NotFoundObjectResult>(action);
-            // Assert = vérifie que le message est correct
-            Assert.Equal("RuleName not found", notFound.Value);
-        }
-
-        [Fact]
-        public async Task Update_returns400_when_model_invalid()
-        {
-            // Arrange
-            var repo = new Mock<IGenericRepository<RuleName>>();
-            var controller = new RuleNameController(repo.Object);
-            controller.ModelState.AddModelError("Name", "Required");
-
-            // Act
-            var action = await controller.Update(2, new RuleNameDTO { Name = null! });
-
-            // Assert = vérifie que la réponse est bien 400
-            var bad = Assert.IsType<BadRequestObjectResult>(action);
-            // Assert = le repo n'est pas appelé
-            repo.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
-            repo.Verify(r => r.UpdateAsync(It.IsAny<RuleName>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task Delete_returnsNoContent204()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
-
-            // Act
-            var action = await controller.Delete(2);
-
-            // Assert = vérifie que la réponse est bien 204
-            Assert.IsType<NoContentResult>(action);
-            // Assert = vérifie que l'élément a bien été supprimé
-            var entity = await ctx.RuleNames.FindAsync(2);
-            Assert.Null(entity);
-        }
-
-        [Fact]
-        public async Task Delete_returnsNotFound404()
-        {
-            // Arrange = crée le controller avec une base de données initialisée
-            var (controller, ctx) = GetControllerWithInMemoryDb(GetInitialDbEntities());
-            // Assure la suppression du contexte après le test (dispose)
-            using var _ = ctx;
-
-            // Act
-            var action = await controller.Delete(99);
-
-            // Assert = vérifie que la réponse est bien 404
-            var notFound = Assert.IsType<NotFoundObjectResult>(action);
-            // Assert = vérifie que le message est correct
-            Assert.Equal("RuleName not found", notFound.Value);
-        }
+        // Assert
+        var notFound = Assert.IsType<NotFoundObjectResult>(action);
+        Assert.Equal("RuleName not found", notFound.Value);
+        repo.Verify(r => r.GetByIdAsync(99), Times.Once);
+        repo.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
 }

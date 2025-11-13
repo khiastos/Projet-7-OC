@@ -1,0 +1,38 @@
+name: CI .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+
+    - name: Installer .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restaurer les packages
+      run: dotnet restore
+
+    - name: Compiler la solution
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Exécuter les tests
+      run: dotnet test --configuration Release --no-build
+
+    - name: Publier l'API
+      run: dotnet publish Projet7/Findexium.csproj -c Release -o publish
+
+    - name: Upload de l'artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-net7
+        path: publish

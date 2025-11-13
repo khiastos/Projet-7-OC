@@ -29,7 +29,7 @@ jobs:
       run: dotnet test --configuration Release --no-build
 
     - name: Publier l'API
-      run: dotnet publish Api/Findexium.csproj -c Release -o publish
+      run: dotnet publish projet8/Findexium.csproj -c Release -o publish 
 
     - name: Upload de l'artifact
       uses: actions/upload-artifact@v4
